@@ -1,0 +1,32 @@
+Resources:
+  NginxInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: t2.micro
+      ImageId: 'ami-033b95fb8079dc481'
+      SecurityGroups:
+        - !Ref NginxSecurityGroup
+      KeyName: nginxKey
+      UserData:
+        Fn::Base64: !Sub
+        - |
+          #!/bin/bash
+          sudo -i
+          mkdir chandani
+          /opt/aws/bin/cfn-init -v --stack NginxStack --resource NginxInstance
+          /opt/aws/bin/cfn-signal -e 0 --stack NginxStack --resource
+          NginxInstance
+        - {
+          }    
+  NginxSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+Outputs:
+  PublicIP:
+    Value: nginxInstance.PublicIp
