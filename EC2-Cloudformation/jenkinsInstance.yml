@@ -38,5 +38,5 @@ Resources:
           CidrIp: 0.0.0.0/0
 Outputs:
   InstanceID:
-    Description: "InstanceId of the newly created EC2 instance"
+    Description: "InstanceId of the newly created instance"
     Value: !Ref JenkinsInstance

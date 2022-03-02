@@ -16,7 +16,6 @@ Resources:
             systemctl start httpd
             systemctl enable httpd
             echo "Hello World" > /var/www/html/index.html  
-  
   NginxSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -30,7 +29,6 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: 0.0.0.0/0
-
 Outputs:
   InstanceID:
     Description: "InstanceId of the newly created EC2 instance"
