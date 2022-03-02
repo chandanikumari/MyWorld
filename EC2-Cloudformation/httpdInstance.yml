@@ -1,0 +1,38 @@
+Resources:
+  NginxInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: t2.micro
+      ImageId: 'ami-033b95fb8079dc481'
+      SecurityGroups:
+        - !Ref NginxSecurityGroup
+      KeyName: nginxKey
+      UserData:
+        Fn::Base64: 
+          !Sub |
+            #!/bin/bash -xe
+            yum update -y 
+            yum install -y httpd 
+            systemctl start httpd
+            systemctl enable httpd
+            echo "Hello World" > /var/www/html/index.html  
+  NginxSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+Outputs:
+  InstanceID:
+    Description: "InstanceId of the newly created EC2 instance"
+    Value: !Ref NginxInstance
+
+
+
