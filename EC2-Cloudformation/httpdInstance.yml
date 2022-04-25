@@ -1,11 +1,15 @@
 Resources:
-  NginxInstance:
+  httpdInstance:
     Type: 'AWS::EC2::Instance'
     Properties:
-      InstanceType: t2.micro
-      ImageId: 'ami-033b95fb8079dc481'
+      InstanceType: 't2.micro'
+      ImageId: 'ami-048ff3da02834afdc'
+      BlockDeviceMappings:
+      - DeviceName: /dev/xvda
+        Ebs:
+          VolumeSize: 10
       SecurityGroups:
-        - !Ref NginxSecurityGroup
+        - !Ref httpdSecurityGroup
       KeyName: nginxKey
       UserData:
         Fn::Base64: 
@@ -16,7 +20,7 @@ Resources:
             systemctl start httpd
             systemctl enable httpd
             echo "Hello World" > /var/www/html/index.html  
-  NginxSecurityGroup:
+  httpdSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: Enable SSH access via port 22
@@ -32,7 +36,7 @@ Resources:
 Outputs:
   InstanceID:
     Description: "InstanceId of the newly created EC2 instance"
-    Value: !Ref NginxInstance
+    Value: !Ref httpdInstance
 
 
 

@@ -1,6 +1,46 @@
 Resources:
   NginxInstance:
     Type: 'AWS::EC2::Instance'
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          installAndConfig:
+           - install
+        install:
+          packages:
+            yum:
+              httpd: []
+            /etc/cfn/cfn-hup.conf:
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+                interval=1
+            mode: '000400'
+            owner: root
+            group: root
+                        
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.NginxInstance.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource NginxInstance --region ${AWS::Region} --configsets installAndConfig
+                runas=root
+              mode: '00400'
+              owner: root
+              group: root
+          services:
+            sysvinit:
+              httpd:
+                enabled: true
+                ensureRunning: true 
+              cfn-hup:
+                enabled: true
+                ensureRunning: true    
     Properties:
       InstanceType: t2.micro
       ImageId: 'ami-033b95fb8079dc481'
@@ -8,16 +48,12 @@ Resources:
         - !Ref NginxSecurityGroup
       KeyName: nginxKey
       UserData:
-        Fn::Base64: !Sub
-        - |
-          #!/bin/bash
-          sudo -i
-          mkdir chandani
-          /opt/aws/bin/cfn-init -v --stack NginxStack --resource NginxInstance
-          /opt/aws/bin/cfn-signal -e 0 --stack NginxStack --resource
-          NginxInstance
-        - {
-          }    
+        Fn::Base64: 
+          !Sub |
+            #!/bin/bash -xe
+            yum update -y aws-cfn-bootstrap
+            /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource NginxInstance --region ${AWS::Region}
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource NginxInstance --region ${AWS::Region}  
   NginxSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -27,6 +63,11 @@ Resources:
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
 Outputs:
-  PublicIP:
-    Value: nginxInstance.PublicIp
+  InstanceID:
+    Description: "InstanceId of the newly created EC2 instance"
+    Value: !Ref NginxInstance

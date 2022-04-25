@@ -1,0 +1,16 @@
+[
+    {
+        "ParameterKey": "InstanceType",
+        "ParameterValue": "t2.micro"
+        
+    },
+    {
+        "ParameterKey": "VpcId",
+        "ParameterValue": "vpc-084299d465c0082a6"
+    
+    },
+    {
+        "ParameterKey": "Subnets",
+        "ParameterValue": "subnet-06900ab35c787b850, subnet-0260b63ca30cc4fe2"
+     }
+]
